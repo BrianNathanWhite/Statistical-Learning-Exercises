@@ -1,0 +1,88 @@
+title: "STOR767 - HW 2 Computing"
+author: Brian N. White
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.height=4, fig.width=6, warning = F)
+
+# constants for homework assignments
+hw_num <- 2
+hw_due_date <- "October 14, 2021"
+```
+
+
+
+## Overview / Instructions
+
+This is the computing part of homework `r paste(hw_num)` of STOR 767. It will be **due on `r paste(hw_due_date)` by 11:55 PM** on Sakai. You can directly edit this file to add your answers. Submit the Rmd file and the HTML version.
+
+You are allowed to work with other students but homework should be in your own words. Identical solutions will receive a $0$ in grade and will be investigated.
+
+## R Markdown / Knitr tips
+
+You should think of this R Markdown file as generating a polished report, one that you would be happy to show other people (or your boss). There shouldn't be any extraneous output; all graphs and code run should clearly have a reason to be run. That means that any output in the final file should have explanations.
+
+A few tips:
+
+* Keep each chunk to only output one thing! In R, if you're not doing an assignment (with the `<-` operator), it's probably going to print something.
+* If you don't want to print the R code you wrote (but want to run it, and want to show the results), use a chunk declaration like this: `{r, echo=F}`
+* If you don't want to show the results of the R code or the original code, use a chunk declaration like: `{r, include=F}`
+* If you don't want to show the results, but show the original code, use a chunk declaration like: `{r, results='hide'}`.
+* If you don't want to run the R code at all use `{r, eval = F}`.
+* We have shown examples in our lectures files. 
+* For more details about these R Markdown options, see the [documentation](http://yihui.name/knitr/options/).
+* **Delete the instructions and this R Markdown section, since they're not part of your overall report.**
+
+## Problem: Logistic Regression and Classification
+We will continue to use the Framingham Data (`Framingham.dat`) so that you are already familiar with the data and the variables. To keep our answers consistent, exclude anyone with a missing entry. For your convenience, we've loaded it here together with a brief summary about the data.
+
+```{r data preparation, include=F}
+# Notice that we hide the code and the results here
+# Using `include=F` in the chunk declaration. 
+hd_data <- read.csv("Framingham.dat")
+str(hd_data) 
+
+### Renames, setting the variables with correct natures...
+names(hd_data)[1] <- "HD"
+hd_data$HD <- as.factor(hd_data$HD)
+hd_data$SEX <- as.factor(hd_data$SEX)
+str(hd_data)
+#tail(hd_data, 1)    # The last row is for prediction
+hd_data.new <- hd_data[1407,] # The female whose HD will be predicted.
+hd_data <- hd_data[-1407,]  # take out the last row 
+hd_data.f <- na.omit(hd_data)
+```
+
+We note that this dataset contains 307 people diagnosed with heart disease and 1086 without heart disease.
+```{r table heart disease, echo = F, comment = " "}
+# we use echo = F to avoid showing this R code
+table(hd_data.f$HD) # HD: 307 of "0" and 1086 "1" 
+```
+
+After a quick cleaning up here is a summary about the data:
+```{r data summary}
+summary(hd_data.f)
+```
+
+**A)**
+Create a traning dataset with 1000 observations and a testing dataset with the rest of the data. Using `set.seed(1)`.
+
+**B)** 
+Our goal is to fit a well-fitting model, that is still small and easy to interpret (parsimonious).
+
+1. Use AIC as the criterion for model selection. Find a logistic regression model with small AIC through exhaustive search in the training dataset. Call this model `fit.aic`.
+
+2. Use the model chosen from part A1 as the final model. Write a brief summary to describe important factors relating to Heart Diseases (i.e. the relationships between those variables in the model and heart disease). Make sure to define â€œimportant factorsâ€ in your words.
+
+3. Liz is a patient with the following readings: `AGE=50, GENDER=FEMALE, SBP=110, DBP=80, CHOL=180, FRW=105, CIG=0`. What is the probability that she will have heart disease, according to our final model?
+
+4. Consider using `fit.aic` for classification in the test dataset. Display the ROC curve using `fit.aic`. Explain what ROC reports and how to use the graph. 
+
+**C)** 
+1. Use BIC as the criterion for model selection. Find a logistic regression model with small BIC through exhaustive search. Call this model `fit.bic`. Compare `fit.bic` and `fit.aic`.
+
+2. Overlay two ROC curves with the test dataset: One from `fit.bic`, the other from `fit.aic` from part A1. Based on the ROC curves, which one do you prefer? 
