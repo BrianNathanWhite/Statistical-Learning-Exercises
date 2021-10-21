@@ -14,6 +14,7 @@ output:
 library(tidyverse)
 library(leaps)
 library(bestglm)
+library(pROC)
 ```
 
 
@@ -70,7 +71,7 @@ Our goal is to fit a well-fitting model, that is still small and easy to interpr
 
 **Solution**
 
-An exhaustive search using AIC as the selection criterion returned the logistic regression model with predictors AGE, SEX, SBP, CHOL, FRW and CIG. The optimal model, according to this search, has an AIC value of 941.42. Note, I used the package, and corresponding command, 'bestglm' to perform this search.
+An exhaustive search using AIC as the selection criterion returned the logistic regression model with six predictors: AGE, SEX, SBP, CHOL, FRW and CIG. The optimal model, according to this search, has an AIC value of 941.42. Note, I used the package, and corresponding command, 'bestglm' to perform this search.
 
 ```{r model selection for glm using exhaustive search with AIC selection criterion}
 #create data frame of the form Xy where X is the design matrix and y is the response vector
@@ -87,23 +88,40 @@ fit.aic <- glm(HD ~ AGE + SEX + SBP + CHOL + FRW + CIG, family=binomial, data=hd
 summary(fit.aic)
 ```
 
-2. Use the model chosen from part B1 as the final model. Write a brief summary to describe important factors relating to Heart Diseases (i.e. the relationships between those variables in the model and heart disease). Make sure to define âimportatn factors in your words.
+2. Use the model chosen from part B1 as the final model. Write a brief summary to describe important factors relating to Heart Diseases (i.e. the relationships between those variables in the model and heart disease). Make sure to define important factors in your words.
+
+**Solution**
 
 3. Liz is a patient with the following readings: `AGE=50, GENDER=FEMALE, SBP=110, DBP=80, CHOL=180, FRW=105, CIG=0`. What is the probability that she will have heart disease, according to our final model?
 
-```{r}
+**Solution**
 
+The probability that Liz will have heart disease, according to the final model, is ~0.04.
+
+```{r return predicted probabilty of heart disease for new observation}
+#create data.frame to store new observation
+new_obs <- data.frame(AGE=50, SEX="FEMALE", SBP=110, DBP=80, CHOL=180, FRW=105, CIG=0)
+#returns predicted probability of heart disease for new observation
+predict(fit.aic, new_obs, type="response")
 ```
 
 
 4. Consider using `fit.aic` for classification in the test dataset. Display the ROC curve using `fit.aic`. Explain what ROC reports and how to use the graph. 
+
+**Solution**
+
+```{r display and discuss the ROC curve for fit.aic}
+fit.aic.test <- predict(fit.aic, hd_data.test, type="response")
+fit.aic.roc <- roc(hd_data.test$HD, fit.aic.test, plot=T)
+```
+
 
 **C)** 
 1. Use BIC as the criterion for model selection. Find a logistic regression model with small BIC through exhaustive search. Call this model `fit.bic`. Compare `fit.bic` and `fit.aic`.
 
 **Solution**
 
-An exhaustive search using BIC as the selection criterion returned the logistic regression model with predictors AGE, SEX, SBP and CHOL. The optimal model, according to this search, has an BIC value of 961.86. (note: The code-chunk below is a modified version of the code-chunk in part B1. Only the information criterion argument, IC, in the bestglm has been changed)
+An exhaustive search using BIC as the selection criterion returned the logistic regression model with four predictors: AGE, SEX, SBP and CHOL. The optimal model, according to this search, has an BIC value of 961.86. (note: The code-chunk below is a modified version of the code-chunk in part B1. Only the information criterion argument, IC, in the bestglm has been changed)
 
 ```{r model selection for glm using exhaustive search with BIC selection criterion}
 #use the bestglm package to perform model selection via exhaustive search using BIC as the selection criterion
@@ -118,6 +136,9 @@ fit.bic <- glm(HD ~ AGE + SEX + SBP + CHOL, family=binomial, data=hd_data.train)
 summary(fit.bic)
 ```
 
+
+Now, let's compare the two models. 
+
 ```{r comparision of fit.bic to fit.aic}
 fit.aic
 fit.bic
@@ -125,7 +146,29 @@ fit.bic
 
 2. Overlay two ROC curves with the test dataset: One from `fit.bic`, the other from `fit.aic` from part A1. Based on the ROC curves, which one do you prefer? 
 
-```{r compare ROC curves associated with fit.bic and fit.aic}
+**Solution**
 
+Based upon the plot below I would prefer to use fit.bic, as it has the greater of the two AUC values (i.e. AUC(fit.bic)=0.69 > AUC(fit.aic)=0.68).
+
+```{r compare ROC curves associated with fit.bic and fit.aic, include=FALSE }
+par(mfrow=c(1, 2))
+fit.bic.test <- predict(fit.bic, hd_data.test, type="response")
+
+fit.bic.roc <- roc(hd_data.test$HD, fit.bic.test, plot=T)
+fit.aic.roc <- roc(hd_data.test$HD, fit.aic.test, plot=T)
+```
+
+```{r}
+plot(1-fit.aic.roc$specificities, fit.aic.roc$sensitivities, col="red", pch=16,type="l",
+     xlab=paste("AUC(fit.aic) =",
+                round(pROC::auc(fit.aic.roc),2),
+                "  AUC(fit.bic) =",
+                round(pROC::auc(fit.bic.roc),2) ), 
+     ylab="Sensitivities")  
+
+points(1-fit.bic.roc$specificities, fit.bic.roc$sensitivities, col="blue",type="l", pch=16)
+legend("bottomright", legend=c("fit.aic w/ six variables", "fit.bic w/ four variable"),
+       lty=c(1,1), lwd=c(2,2), col=c("red", "blue"))
+title("Comparison of two models using testing data")
 ```
 
