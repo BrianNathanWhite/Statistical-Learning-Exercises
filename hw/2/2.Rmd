@@ -1,4 +1,5 @@
-title: "STOR767 - HW 2 Computing"
+---
+title: "STOR767 - Computational Problems for HW 2"
 author: Brian N. White
 output:
   html_document: default
@@ -11,6 +12,8 @@ output:
 
 ```{r load packages}
 library(tidyverse)
+library(leaps)
+library(bestglm)
 ```
 
 
@@ -44,6 +47,8 @@ summary(hd_data.f)
 **A)**
 Create a training dataset with 1000 observations and a testing dataset with the rest of the data. Using `set.seed(1)`.
 
+**Solution**
+
 ```{r create training and testing data sets}
 set.seed(1)
 
@@ -54,7 +59,7 @@ index.train <- sample(N, 1000)
 #training data
 hd_data.train <- hd_data.f[index.train,]
 #testing data
-hd_ddata.test <- hd_data.f[-index.train,]
+hd_data.test <- hd_data.f[-index.train,]
 ```
 
 
@@ -63,11 +68,26 @@ Our goal is to fit a well-fitting model, that is still small and easy to interpr
 
 1. Use AIC as the criterion for model selection. Find a logistic regression model with small AIC through exhaustive search in the training dataset. Call this model `fit.aic`.
 
-```{r}
+**Solution**
 
+An exhaustive search using AIC as the selection criterion returned the logistic regression model with predictors AGE, SEX, SBP, CHOL, FRW and CIG. The optimal model, according to this search, has an AIC value of 941.42. Note, I used the package, and corresponding command, 'bestglm' to perform this search.
+
+```{r model selection for glm using exhaustive search with AIC selection criterion}
+#create data frame of the form Xy where X is the design matrix and y is the response vector
+df_glm <- data.frame(cbind(hd_data.train[,-1], HD=hd_data.train[,1]))
+#use the bestglm package to perfrom model selection via exhaustive search using AIC as the selection criterion
+exhaustive_search <- bestglm(df_glm, family = binomial, IC="AIC", method = "exhaustive")
+#returns the best n predictor models where n ranges from 0 to 7
+exhaustive_search$Subsets
+#the best model over the exhaustive search is the model with the 6 predictors specified via the output below
+exhaustive_search$BestModel
+#fit the selected model
+fit.aic <- glm(HD ~ AGE + SEX + SBP + CHOL + FRW + CIG, family=binomial, data=hd_data.train)
+#AIC is 941.4
+summary(fit.aic)
 ```
 
-2. Use the model chosen from part A1 as the final model. Write a brief summary to describe important factors relating to Heart Diseases (i.e. the relationships between those variables in the model and heart disease). Make sure to define â€œimportant factorsâ€ in your words.
+2. Use the model chosen from part B1 as the final model. Write a brief summary to describe important factors relating to Heart Diseases (i.e. the relationships between those variables in the model and heart disease). Make sure to define âimportatn factors in your words.
 
 3. Liz is a patient with the following readings: `AGE=50, GENDER=FEMALE, SBP=110, DBP=80, CHOL=180, FRW=105, CIG=0`. What is the probability that she will have heart disease, according to our final model?
 
