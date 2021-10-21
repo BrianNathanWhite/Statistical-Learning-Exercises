@@ -6,46 +6,19 @@ output:
   word_document: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(fig.height=4, fig.width=6, warning = F)
-
-# constants for homework assignments
-hw_num <- 2
-hw_due_date <- "October 14, 2021"
-```
-
-
-
-## Overview / Instructions
-
-This is the computing part of homework `r paste(hw_num)` of STOR 767. It will be **due on `r paste(hw_due_date)` by 11:55 PM** on Sakai. You can directly edit this file to add your answers. Submit the Rmd file and the HTML version.
-
-You are allowed to work with other students but homework should be in your own words. Identical solutions will receive a $0$ in grade and will be investigated.
-
-## R Markdown / Knitr tips
-
-You should think of this R Markdown file as generating a polished report, one that you would be happy to show other people (or your boss). There shouldn't be any extraneous output; all graphs and code run should clearly have a reason to be run. That means that any output in the final file should have explanations.
-
-A few tips:
-
-* Keep each chunk to only output one thing! In R, if you're not doing an assignment (with the `<-` operator), it's probably going to print something.
-* If you don't want to print the R code you wrote (but want to run it, and want to show the results), use a chunk declaration like this: `{r, echo=F}`
-* If you don't want to show the results of the R code or the original code, use a chunk declaration like: `{r, include=F}`
-* If you don't want to show the results, but show the original code, use a chunk declaration like: `{r, results='hide'}`.
-* If you don't want to run the R code at all use `{r, eval = F}`.
-* We have shown examples in our lectures files. 
-* For more details about these R Markdown options, see the [documentation](http://yihui.name/knitr/options/).
-* **Delete the instructions and this R Markdown section, since they're not part of your overall report.**
 
 ## Problem: Logistic Regression and Classification
-We will continue to use the Framingham Data (`Framingham.dat`) so that you are already familiar with the data and the variables. To keep our answers consistent, exclude anyone with a missing entry. For your convenience, we've loaded it here together with a brief summary about the data.
+
+```{r load packages}
+library(tidyverse)
+```
+
 
 ```{r data preparation, include=F}
 # Notice that we hide the code and the results here
 # Using `include=F` in the chunk declaration. 
-hd_data <- read.csv("Framingham.dat")
-str(hd_data) 
 
+hd_data <-  read.csv("FRAMINGHAM.dat.txt")
 ### Renames, setting the variables with correct natures...
 names(hd_data)[1] <- "HD"
 hd_data$HD <- as.factor(hd_data$HD)
@@ -69,12 +42,30 @@ summary(hd_data.f)
 ```
 
 **A)**
-Create a traning dataset with 1000 observations and a testing dataset with the rest of the data. Using `set.seed(1)`.
+Create a training dataset with 1000 observations and a testing dataset with the rest of the data. Using `set.seed(1)`.
+
+```{r create training and testing data sets}
+set.seed(1)
+
+#number of total observations
+N <- length(hd_data.f$HD)
+#generate indices for training data
+index.train <- sample(N, 1000)
+#training data
+hd_data.train <- hd_data.f[index.train,]
+#testing data
+hd_ddata.test <- hd_data.f[-index.train,]
+```
+
 
 **B)** 
 Our goal is to fit a well-fitting model, that is still small and easy to interpret (parsimonious).
 
 1. Use AIC as the criterion for model selection. Find a logistic regression model with small AIC through exhaustive search in the training dataset. Call this model `fit.aic`.
+
+```{r}
+
+```
 
 2. Use the model chosen from part A1 as the final model. Write a brief summary to describe important factors relating to Heart Diseases (i.e. the relationships between those variables in the model and heart disease). Make sure to define â€œimportant factorsâ€ in your words.
 
