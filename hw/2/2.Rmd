@@ -2,8 +2,8 @@
 title: "STOR767 - Computational Problems for HW 2"
 author: Brian N. White
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
   word_document: default
 ---
 
@@ -92,6 +92,8 @@ summary(fit.aic)
 
 **Solution**
 
+All of the  Wald tests, except for FRW, are statistically significant at the $\alpha=0.05$ level. Thus, the data suggest that there is, in fact, a linear association between the co-variates and the logit of heart disease. To be more precise, each of the variables are positively correlated with the logit of heart disease. Of the co-variates, the sex and, to a much lesser extent, the age of an individual have the greatest impact on the logit of heart disease (e.g. An increase of one year results in a mean increase of 0.94 for the logit of heart disease).
+
 3. Liz is a patient with the following readings: `AGE=50, GENDER=FEMALE, SBP=110, DBP=80, CHOL=180, FRW=105, CIG=0`. What is the probability that she will have heart disease, according to our final model?
 
 **Solution**
@@ -104,7 +106,6 @@ new_obs <- data.frame(AGE=50, SEX="FEMALE", SBP=110, DBP=80, CHOL=180, FRW=105, 
 #returns predicted probability of heart disease for new observation
 predict(fit.aic, new_obs, type="response")
 ```
-
 
 4. Consider using `fit.aic` for classification in the test dataset. Display the ROC curve using `fit.aic`. Explain what ROC reports and how to use the graph. 
 
@@ -158,7 +159,7 @@ fit.bic.roc <- roc(hd_data.test$HD, fit.bic.test, plot=T)
 fit.aic.roc <- roc(hd_data.test$HD, fit.aic.test, plot=T)
 ```
 
-```{r}
+```{r generates overlayed ROC curves mentioned in question}
 plot(1-fit.aic.roc$specificities, fit.aic.roc$sensitivities, col="red", pch=16,type="l",
      xlab=paste("AUC(fit.aic) =",
                 round(pROC::auc(fit.aic.roc),2),

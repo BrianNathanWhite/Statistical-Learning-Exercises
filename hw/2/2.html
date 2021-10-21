@@ -404,7 +404,7 @@ summary(fit.bic)</code></pre>
 <li>Overlay two ROC curves with the test dataset: One from <code>fit.bic</code>, the other from <code>fit.aic</code> from part A1. Based on the ROC curves, which one do you prefer?</li>
 </ol>
 <p><strong>Solution</strong></p>
-<p>Based upon the plot below I would prefer to use fit.bic, as it has the greater of the two AUC values.</p>
+<p>Based upon the plot below I would prefer to use fit.bic, as it has the greater of the two AUC values (i.e. AUC(fit.bic)=0.69 &gt; AUC(fit.aic)=0.68).</p>
 <pre class="r"><code>plot(1-fit.aic.roc$specificities, fit.aic.roc$sensitivities, col=&quot;red&quot;, pch=16,type=&quot;l&quot;,
      xlab=paste(&quot;AUC(fit.aic) =&quot;,
                 round(pROC::auc(fit.aic.roc),2),
