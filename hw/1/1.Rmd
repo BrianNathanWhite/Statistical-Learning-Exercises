@@ -1,0 +1,171 @@
+---
+title: "STOR 767 HW 1"
+author: "Brian N. White"
+date: "10/6/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r library, include=FALSE}
+# add your library imports here:
+library(tidyverse)
+library(glmnet)
+```
+
+## Problem 1: Regularization
+
+```{r}
+crime.data_clean <- read.csv("CrimeData_clean.csv")
+```
+
+Our goal is to find the factors which relate to violent crime. This variable is included in crime as `crime.data$violentcrimes.perpop`.
+
+**A)** Exploratory data analysis (EDA)
+
+* Show the heatmap with mean violent crime by state. You may also show a couple of your favorite summary statistics by state through the heatmaps.  
+* Write a brief summary based on your EDA.
+
+The heat map in question is output by the code-chunk below. A brief summary of my EDA based upon this map is as follows: The most obvious pattern in the heatmap is that crime rates are greatest in the South-Eastern part of the United States. The crime rate appears to ease up in the center of the country, increase somewhat on the West Coast and decrease substantially the further north one goes, particularly in the Mid-West.
+
+```{r generate heat map for crime rate, warning=FALSE}
+data.s <- crime.data_clean %>%
+  group_by(state) %>%
+  summarise(
+    mean.income=mean(med.income), 
+    income.min=min(med.income),
+    income.max=max(med.income),
+    crime.rate=mean(violentcrimes.perpop, na.rm=TRUE), #ignore the missing values
+    n=n())
+
+crime <- data.s[, c("state", "crime.rate")]
+
+crime$region <- tolower(state.name[match(crime$state, state.abb)])
+crime$center_lat  <- state.center$x[match(crime$state, state.abb)]
+crime$center_long <- state.center$y[match(crime$state, state.abb)]
+
+states <- map_data("state") 
+map <- merge(states, crime, sort=FALSE, by="region", all.x=TRUE)
+map <- map[order(map$order),]
+
+ggplot(map, aes(x=long, y=lat, group=group))+
+  geom_polygon(aes(fill=crime.rate))+
+  geom_path()+ 
+  geom_label(data=crime, 
+             aes(x=center_lat, y=center_long, group=NA, label=state), 
+             size=3, label.size = 0) +
+  scale_fill_distiller(palette = "YlGnBu", direction = 1)
+```
+
+**B)** We use a subset of the crime data discussed in class, but only look at Florida and California. 
+```{r}
+crime.fl.ca <- dplyr::filter(crime.data_clean, state %in% c("FL", "CA"))
+```
+
+Use LASSO to choose a reasonable, small model. Fit an OLS model with the variables obtained. The final model should only include variables with p-values < 0.05. Note: you may choose to use lambda 1se or lambda min to answer the following questions where apply. 
+
+1. What is the model reported by LASSO? 
+
+The model reported by LASSO includes the features, with corresponding non-zero parameter estimates, output by the code-chunk below. Note that the value of lambda min is output as well.
+
+```{r}
+#part 1
+Y <- crime.fl.ca$violentcrimes.perpop
+X.fl.ca <- model.matrix(violentcrimes.perpop~., data=crime.fl.ca)[, -1]
+
+set.seed(10)
+fit.fl.ca.cv <- cv.glmnet(X.fl.ca, Y, alpha=1, nfolds=10) 
+names(fit.fl.ca.cv); summary(fit.fl.ca.cv)
+fit.fl.ca.cv$lambda.min
+
+coef.min <- coef(fit.fl.ca.cv, s="lambda.min") 
+coef.min <- coef.min[which(coef.min !=0),] 
+coef.min
+```
+
+
+2. What is the model after running OLS?
+
+The model determined after running OLS on the features selected by LASSO in part 1, along with their corresponding parameter estimates, are output in a summary by the code-chunk below.
+
+```{r}
+#part 2
+var.min <- rownames(as.matrix(coef.min)) 
+lm.input <- as.formula(paste("violentcrimes.perpop", "~", paste(var.min[-1], collapse = "+"))) 
+
+fit.min.lm <- lm(lm.input, data=crime.fl.ca)
+lm.output <- coef(fit.min.lm) 
+summary(fit.min.lm) 
+```
+
+
+3. What is your final model, after excluding high p-value variables? You will need to use model selection method to obtain this final model. Make it clear what criterion/criteria you have used and justify why they are appropriate. 
+
+From the summary table given in part 2 there are 7 features with significant t-tests. The features include 'race.pct.black', 'asian.percap', the divorce percentage among adult males, the percentage of kids living with two parents, the percentage of working moms, the percentage of people that only speak English and the percentage of houses occupied in the area. Thus, the final model is a linear model that includes these features. 
+
+In sum, this model was arrived at via the following two-step procedure. First, the full model with all possible features was reduced to a far smaller model via the feature selection performed by LASSO. Then, a linear model was fit from this reduced set of features and those features with insignificant t-tests were discarded (i.e. relaxed LASSO).
+
+
+**C)** Now, instead of Lasso, we want to consider how changing the value of alpha (i.e. mixing between Lasso and Ridge) will affect the model. Cross-validate between alpha and lambda, instead of just lambda. Note that the final model may have variables with p-values higher than 0.05; this is because we are optimizing for accuracy rather than parsimoniousness. 
+
+1. What is your final elastic net model? What were the alpha and lambda values? What is the prediction error?
+
+I performed 10-fold CV over $\alpha$ and $\lambda$ in the code-chunk below. The range of $\alpha$ considered was 0 to 1 in increments of 0.1. The range of $\lambda$ is determined by the cv.glmnet command. My final elastic net model selected the 17 features output last by the code-chunk below. For this model, $\alpha=0.5$ and $\lambda=75.38206$. The prediction error is 122595.2 
+
+```{r perform 10-fold CV over alpha and lambda}
+#part 1
+set.seed(10)
+
+#each entry of this vector stores the min mean CV error over lambda for a fixed alpha
+model_results <- vector()
+
+for(i in seq(0, 1, by=0.1)){
+a <- cv.glmnet(X.fl.ca, Y, alpha=i, nfolds=10)
+model_results <- c(model_results, min(a$cvm))}
+
+model_results
+
+#estimated optimal prediction error
+min(model_results)
+
+#alpha=0.5 should be used
+which.min(model_results)
+
+#the corresponding lambda min for this model is lambda=75.38206
+cv.glmnet(X.fl.ca, Y, alpha=0.5, nfolds=10)$lambda.min
+
+#elastic-net model alpha=0.5, lambda=75.38206
+coef.min_elastic <- coef(cv.glmnet(X.fl.ca, Y, alpha=0.5, nfolds=10) , s="lambda.min") 
+coef.min_elastic <- coef.min_elastic[which(coef.min_elastic !=0),] 
+coef.min_elastic
+
+#produce the prediction error for the chosen elastic net model
+d <- cv.glmnet(X.fl.ca, Y, alpha=0.5, nfolds=10)
+mean((Y-predict(d, s=d$lambda.min, X.fl.ca))^2)
+```
+
+2. Use the elastic net variables in an OLS model. What is the equation, and what is the prediction error?
+
+The features selected by elastic net in part 1 are used in an OLS model as seen in the following code-chunk. None of these features are removed, even if their t-tests are insignificant, as I am optimizing for accuracy. These 7 features are race.pctblack, asian.percap, male.pct.divorce, pct.kids2parents, pct.workmom, pct.english.only, pct.house.occup. The prediction error for the final OLS model is 117001.9
+
+```{r}
+#part 2
+var.min_elastic <- rownames(as.matrix(coef.min_elastic)) 
+lm.input2 <- as.formula(paste("violentcrimes.perpop", "~", paste(var.min_elastic[-1], collapse = "+"))) 
+
+fit.min.lm2 <- lm(lm.input2, data=crime.fl.ca)
+lm.output2 <- coef(fit.min.lm2) 
+summary(fit.min.lm)
+
+lm_final_elastic <- lm(violentcrimes.perpop~ race.pctblack + asian.percap + male.pct.divorce + pct.kids2parents + pct.workmom + pct.english.only + pct.house.vacant, data=crime.fl.ca)
+
+#the prediction error
+mean((Y-predict(fit.min.lm2))^2)
+```
+3. Summarize your findings, with particular focus on the difference between the two equations.
+
+In sum, I tuned an elastic net model over a grid of $\alpha$ and $\lambda$. The range of the $\lambda$ values was pre-determined by the cv.glmnet command whereas the range of the $\alpha$ values was 0 to 1 by 0.1. The optimal choice of $\alpha$ and $\lambda$ was determined to be $\alpha=0.5$ and $\lambda=75.38206$. The predictions errors for the elastic net and OLS models were, respectively, 122595.2 and 117001.9. Thus, the OLS model outperformed the elastic-net model w.r.t to this measure. The OLS and elastic-net model possess identical features; however, these feature are obtained in different manners. Elastic net minimizes RSS with a convex combination of $L_{1}$ and $L_{2}$ penalties. OLS is a special case of this regime with $\lambda=0$.
