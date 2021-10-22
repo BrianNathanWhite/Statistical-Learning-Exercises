@@ -16,8 +16,6 @@ library(leaps)
 library(bestglm)
 library(pROC)
 ```
-
-
 ```{r data preparation, include=F}
 # Notice that we hide the code and the results here
 # Using `include=F` in the chunk declaration. 
@@ -111,6 +109,8 @@ predict(fit.aic, new_obs, type="response")
 
 **Solution**
 
+The ROC curve reports the sensitivity vs specificity for a given classifier as the classification threshold varies. Thus, the ROC curve can be used to measure the performance of a classifier. One metric associated with a ROC curve is the AUC or 'area under curve'. Intuitively, as the AUC increases so to does the corresponding classifier's performance.
+
 ```{r display and discuss the ROC curve for fit.aic}
 fit.aic.test <- predict(fit.aic, hd_data.test, type="response")
 fit.aic.roc <- roc(hd_data.test$HD, fit.aic.test, plot=T)
@@ -122,7 +122,7 @@ fit.aic.roc <- roc(hd_data.test$HD, fit.aic.test, plot=T)
 
 **Solution**
 
-An exhaustive search using BIC as the selection criterion returned the logistic regression model with four predictors: AGE, SEX, SBP and CHOL. The optimal model, according to this search, has an BIC value of 961.86. (note: The code-chunk below is a modified version of the code-chunk in part B1. Only the information criterion argument, IC, in the bestglm has been changed)
+An exhaustive search using BIC as the selection criterion returned the logistic regression model with four predictors: AGE, SEX, SBP and CHOL. The optimal model, according to this search, has an BIC value of 961.86. (note: The code-chunk below is a modified version of the code-chunk in part B1. Only the information criterion argument, IC, in the bestglm has been changed).
 
 ```{r model selection for glm using exhaustive search with BIC selection criterion}
 #use the bestglm package to perform model selection via exhaustive search using BIC as the selection criterion
@@ -138,11 +138,11 @@ summary(fit.bic)
 ```
 
 
-Now, let's compare the two models. 
+Now, let us compare the two models. The most obvious difference is that fit.bic consists of a four variable subset of the predictors in fit.aic. All of the shared predictors have statistically significant Wald tests (at the $\alpha=0.05$ level). In addition, the parameter estimates for these variables have the same sign and order. AIC and BIC cannot be used to chose between these two models as fit.aic is optimal w.r.t AIC and fit.big is optimal w.r.t BIC.
 
 ```{r comparision of fit.bic to fit.aic}
-fit.aic
-fit.bic
+summary(fit.aic)
+summary(fit.bic)
 ```
 
 2. Overlay two ROC curves with the test dataset: One from `fit.bic`, the other from `fit.aic` from part A1. Based on the ROC curves, which one do you prefer? 
