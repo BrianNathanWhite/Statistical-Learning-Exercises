@@ -2,8 +2,8 @@
 title: "STOR767 - Computational Problems for HW 2"
 author: Brian N. White
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
   word_document: default
 ---
 
@@ -72,13 +72,16 @@ Our goal is to fit a well-fitting model, that is still small and easy to interpr
 An exhaustive search using AIC as the selection criterion returned the logistic regression model with six predictors: AGE, SEX, SBP, CHOL, FRW and CIG. The optimal model, according to this search, has an AIC value of 941.42. Note, I used the package, and corresponding command, 'bestglm' to perform this search.
 
 ```{r model selection for glm using exhaustive search with AIC selection criterion}
-#create data frame of the form Xy where X is the design matrix and y is the response vector
+#create data frame of the form Xy where X is the design matrix
+#and y is the response vector
 df_glm <- data.frame(cbind(hd_data.train[,-1], HD=hd_data.train[,1]))
-#use the bestglm package to perform model selection via exhaustive search using AIC as the selection criterion
+#use the bestglm package to perform model selection via 
+#exhaustive search using AIC as the selection criterion
 exhaustive_search <- bestglm(df_glm, family = binomial, IC="AIC", method = "exhaustive")
 #returns the best n predictor models where n ranges from 0 to 7
 exhaustive_search$Subsets
-#the best model over the exhaustive search is the model with the 6 predictors specified via the output below
+#the best model over the exhaustive search is the 
+#model with the 6 predictors specified via the output below
 exhaustive_search$BestModel
 #fit the selected model
 fit.aic <- glm(HD ~ AGE + SEX + SBP + CHOL + FRW + CIG, family=binomial, data=hd_data.train)
@@ -125,11 +128,13 @@ fit.aic.roc <- roc(hd_data.test$HD, fit.aic.test, plot=T)
 An exhaustive search using BIC as the selection criterion returned the logistic regression model with four predictors: AGE, SEX, SBP and CHOL. The optimal model, according to this search, has an BIC value of 961.86. (note: The code-chunk below is a modified version of the code-chunk in part B1. Only the information criterion argument, IC, in the bestglm has been changed).
 
 ```{r model selection for glm using exhaustive search with BIC selection criterion}
-#use the bestglm package to perform model selection via exhaustive search using BIC as the selection criterion
+#use the bestglm package to perform model selection 
+#via exhaustive search using BIC as the selection criterion
 exhaustive_search2 <- bestglm(df_glm, family = binomial, IC="BIC", method = "exhaustive")
 #returns the best n predictor models where n ranges from 0 to 7
 exhaustive_search2$Subsets
-#the best model over the exhaustive search is the model with the 4 predictors specified via the output below
+#the best model over the exhaustive search is the 
+#model with the 4 predictors specified via the output below
 exhaustive_search2$BestModel
 #fit the selected model
 fit.bic <- glm(HD ~ AGE + SEX + SBP + CHOL, family=binomial, data=hd_data.train)

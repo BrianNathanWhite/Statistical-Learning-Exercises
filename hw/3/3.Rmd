@@ -1,0 +1,130 @@
+---
+title: "STOR 767 HW 3 - Computing"
+author: "Brian N. White"
+date: "10/27/2021"
+output: pdf_document
+---
+
+# Overview / Instructions
+
+This is the computing part of homework `r paste(hw_num)` of STOR 767. It will be **due on `r paste(hw_due_date)` by 11:55 PM** on Sakai. You can directly edit this file to add your answers. Submit the Rmd file and the HTML version.
+
+# Problem: IQ and successes
+
+## Background: Measurement of Intelligence 
+
+Case Study:  How intelligence relates to one's future successes?
+
+**Data needed: `IQ.Full.csv`**
+
+ASVAB (Armed Services Vocational Aptitude Battery) tests have been used as a screening test for those who want to join the army or other jobs. 
+
+Our data set `IQ.csv` is a subset of individuals from the 1979 National Longitudinal Study of 
+Youth (NLSY79) survey who were re-interviewed in 2006. Information about family, personal demographic such as gender, race and education level, plus a set of ASVAB (Armed Services Vocational Aptitude Battery) test scores are available. It is STILL used as a screening test for those who want to join the army! ASVAB scores were 1981 and income was 2005. 
+
+**Our goals:** 
+
++ Is IQ related to one's successes measured by Income?
++ Is there evidence to show that Females are under-paid?
++ What are the best possible prediction models to predict future income? 
+
+
+**The ASVAB has the following components:**
+
++ Science, Arith (Arithmetic reasoning), Word (Word knowledge), Parag (Paragraph comprehension), Numer (Numerical operation), Coding (Coding speed), Auto (Automative and Shop information), Math (Math knowledge), Mechanic (Mechanic Comprehension) and Elec (Electronic information).
++ AFQT (Armed Forces Qualifying Test) is a combination of Word, Parag, Math and Arith.
++ Note: Service Branch requirement: Army 31, Navy 35, Marines 31, Air Force 36, and Coast Guard 45,(out of 100 which is the max!) 
+
+**The detailed variable definitions:**
+
+Personal Demographic Variables: 
+
+ * Race: 1 = Hispanic, 2 = Black, 3 = Not Hispanic or Black
+ * Gender: a factor with levels "female" and "male"
+ * Educ: years of education completed by 2006
+ 
+Household Environment: 
+ 
+* Imagazine: a variable taking on the value 1 if anyone in the respondentâ€™s household regularly read
+	magazines in 1979, otherwise 0
+* Inewspaper: a variable taking on the value 1 if anyone in the respondentâ€™s household regularly read
+	newspapers in 1979, otherwise 0
+* Ilibrary: a variable taking on the value 1 if anyone in the respondentâ€™s household had a library card
+	in 1979, otherwise 0
+* MotherEd: motherâ€™s years of education
+* FatherEd: fatherâ€™s years of education
+
+Variables Related to ASVAB test Scores in 1981 (Proxy of IQ's)
+
+* AFQT: percentile score on the AFQT intelligence test in 1981 
+* Coding: score on the Coding Speed test in 1981
+* Auto: score on the Automotive and Shop test in 1981
+* Mechanic: score on the Mechanic test in 1981
+* Elec: score on the Electronics Information test in 1981
+
+* Science: score on the General Science test in 1981
+* Math: score on the Math test in 1981
+* Arith: score on the Arithmetic Reasoning test in 1981
+* Word: score on the Word Knowledge Test in 1981
+* Parag: score on the Paragraph Comprehension test in 1981
+* Numer: score on the Numerical Operations test in 1981
+
+Variable Related to Life Success in 2006
+
+* Income2005: total annual income from wages and salary in 2005. We will use a natural log transformation over the income.
+
+The following 10 questions are answered as 1: strongly agree, 2: agree, 3: disagree, 4: strongly disagree
+
+* Esteem 1: â€œI am a person of worthâ€
+* Esteem 2: â€œI have a number of good qualitiesâ€
+* Esteem 3: â€œI am inclined to feel like a failureâ€
+* Esteem 4: â€œI do things as well as othersâ€
+* Esteem 5: â€œI do not have much to be proud ofâ€
+* Esteem 6: â€œI take a positive attitude towards myself and othersâ€
+* Esteem 7: â€œI am satisfied with myselfâ€
+* Esteem 8: â€œI wish I could have more respect for myselfâ€
+* Esteem 9: â€œI feel useless at timesâ€
+* Esteem 10: â€œI think I am no good at allâ€
+
+**Note: we will not use the Esteem scores in this homework.**
+
+```{r, include=FALSE}
+# Loading and cleaning of data.
+iq <- read.csv("IQ.Full.csv")
+iq[nrow(iq), ]
+names(iq)
+iq$Imagazine <- as.factor(iq$Imagazine)
+iq$Inewspaper <- as.factor(iq$Inewspaper) 
+iq$Ilibrary <- as.factor(iq$Ilibrary)
+iq$Race <- as.factor(iq$Race)
+iq$Gender <- as.factor(iq$Gender)
+iq$Income2005 <- log(iq$Income2005)
+iq <- iq[, -1]
+iq <- iq[, -c(22:31)]
+str(iq)
+index1 <- sample(nrow(iq), 200)
+iq1 <- iq[index1, ]
+str(iq1)
+summary(iq1)
+cor(iq[, 11:21]) # ASVAB tests are highly correlated
+pairs(iq[, 11:21]) # 
+```
+
+## 1. EDA
+i. Make a few informative tables or plots to see how intellegence might relate to the log income.
+ii. Make a training data and testing data (approximately 2/3 observations as training data)
+
+## 2. Single trees
+i. Build a reasonable single tree using all the variables to predict log income. Display the tree.
+ii. Explain the predictions. Does that agree with our intuition?
+iii. Can you detect gender bias against women from the tree built?
+iv. Do we have evidence that the high IQâ€™s result in higher income? What is the testing errors for the tree you built?
+
+## 3. Bagging with two bootstrap trees.
+i. Build and display two bootstrap trees. Commenting on the differences among the two trees.
+ii. Bag the two tree by taking average of the two bootstrap trees above. What is the testing error?
+
+## 4. Build the best possible random forest
+i. Show the process how you tune the number of the trees and `mtry`
+ii. What is the testing error for your random forest?
+iii. Comment on the pro and cons for the random forest comparing with the single tree you built earlier.

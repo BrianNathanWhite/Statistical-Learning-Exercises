@@ -228,9 +228,11 @@ hd_data.test &lt;- hd_data.f[-index.train,]</code></pre>
 </ol>
 <p><strong>Solution</strong></p>
 <p>An exhaustive search using AIC as the selection criterion returned the logistic regression model with six predictors: AGE, SEX, SBP, CHOL, FRW and CIG. The optimal model, according to this search, has an AIC value of 941.42. Note, I used the package, and corresponding command, ‘bestglm’ to perform this search.</p>
-<pre class="r"><code>#create data frame of the form Xy where X is the design matrix and y is the response vector
+<pre class="r"><code>#create data frame of the form Xy where X is the design matrix
+#and y is the response vector
 df_glm &lt;- data.frame(cbind(hd_data.train[,-1], HD=hd_data.train[,1]))
-#use the bestglm package to perform model selection via exhaustive search using AIC as the selection criterion
+#use the bestglm package to perform model selection via 
+#exhaustive search using AIC as the selection criterion
 exhaustive_search &lt;- bestglm(df_glm, family = binomial, IC=&quot;AIC&quot;, method = &quot;exhaustive&quot;)</code></pre>
 <pre><code>## Morgan-Tatar search since family is non-gaussian.</code></pre>
 <pre class="r"><code>#returns the best n predictor models where n ranges from 0 to 7
@@ -244,7 +246,8 @@ exhaustive_search$Subsets</code></pre>
 ## 5       TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE FALSE     -482.3764  974.7527
 ## 6*      TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE     -480.8456  973.6912
 ## 7       TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE     -480.7966  975.5933</code></pre>
-<pre class="r"><code>#the best model over the exhaustive search is the model with the 6 predictors specified via the output below
+<pre class="r"><code>#the best model over the exhaustive search is the 
+#model with the 6 predictors specified via the output below
 exhaustive_search$BestModel</code></pre>
 <pre><code>## 
 ## Call:  glm(formula = y ~ ., family = family, data = Xi, weights = weights)
@@ -319,7 +322,8 @@ fit.aic.roc &lt;- roc(hd_data.test$HD, fit.aic.test, plot=T)</code></pre>
 <p><strong>C)</strong> 1. Use BIC as the criterion for model selection. Find a logistic regression model with small BIC through exhaustive search. Call this model <code>fit.bic</code>. Compare <code>fit.bic</code> and <code>fit.aic</code>.</p>
 <p><strong>Solution</strong></p>
 <p>An exhaustive search using BIC as the selection criterion returned the logistic regression model with four predictors: AGE, SEX, SBP and CHOL. The optimal model, according to this search, has an BIC value of 961.86. (note: The code-chunk below is a modified version of the code-chunk in part B1. Only the information criterion argument, IC, in the bestglm has been changed).</p>
-<pre class="r"><code>#use the bestglm package to perform model selection via exhaustive search using BIC as the selection criterion
+<pre class="r"><code>#use the bestglm package to perform model selection 
+#via exhaustive search using BIC as the selection criterion
 exhaustive_search2 &lt;- bestglm(df_glm, family = binomial, IC=&quot;BIC&quot;, method = &quot;exhaustive&quot;)</code></pre>
 <pre><code>## Morgan-Tatar search since family is non-gaussian.</code></pre>
 <pre class="r"><code>#returns the best n predictor models where n ranges from 0 to 7
@@ -333,7 +337,8 @@ exhaustive_search2$Subsets</code></pre>
 ## 5       TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE FALSE     -482.3764  999.2915
 ## 6       TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE     -480.8456 1003.1377
 ## 7       TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE     -480.7966 1009.9476</code></pre>
-<pre class="r"><code>#the best model over the exhaustive search is the model with the 4 predictors specified via the output below
+<pre class="r"><code>#the best model over the exhaustive search is the 
+#model with the 4 predictors specified via the output below
 exhaustive_search2$BestModel</code></pre>
 <pre><code>## 
 ## Call:  glm(formula = y ~ ., family = family, data = Xi, weights = weights)
