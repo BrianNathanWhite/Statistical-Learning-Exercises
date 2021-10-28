@@ -111,7 +111,7 @@ attach(iq) #load variable names
 ```
 
 ```{r load packages, include=FALSE}
-pacman::p_load(randomForest, tree, ISLR, rpart, rattle, pROC, partykit, ggplot2, glmnet, lda, class)
+pacman::p_load(randomForest, tree, ISLR, rpart, rattle, pROC, partykit, ggplot2, glmnet, lda, class, tidyverse)
 ```
 
 ## 1. EDA
@@ -147,16 +147,48 @@ iq_test <- iq[-iq_train_index,]
 i. Build a reasonable single tree using all the variables to predict log income. Display the tree.
 ii. Explain the predictions. Does that agree with our intuition?
 iii. Can you detect gender bias against women from the tree built?
-iv. Do we have evidence that the high IQ?™s result in higher income? What is the testing errors for the tree you built?
+iv. Do we have evidence that the high IQs result in higher income? What is the testing error for the tree you built?
+
+**Solution**
+
+**i**
+
+```{r}
+tree_iq_train <- tree(Income2005~., iq_train)
+plot(tree_iq_train)
+text(tree_iq_train, pretty = 1)
+```
+**ii**
+
+**iii**
+
+**iv**
+
+```{r}
+tree_iq_predict <- predict(tree_iq_train, iq_test)
+
+#testing error
+tree_iq_test_err <- sum((iq_test$Income2005-tree_iq_predict)^2)/852
+tree_iq_test_err
+```
+
+## 3. Bagging with two bootstrap trees.
+i. Build and display two bootstrap trees. Commenting on the differences among the two trees.
+ii. Bag the twos tree by taking average of the two bootstrap trees above. What is the testing error?
+
+**Solution**
+
+**i**
 
 ```{r}
 
 ```
 
+**ii**
 
-## 3. Bagging with two bootstrap trees.
-i. Build and display two bootstrap trees. Commenting on the differences among the two trees.
-ii. Bag the two tree by taking average of the two bootstrap trees above. What is the testing error?
+```{r}
+
+```
 
 ## 4. Build the best possible random forest
 i. Show the process how you tune the number of the trees and `mtry`
