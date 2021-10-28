@@ -2,12 +2,10 @@
 title: "STOR 767 HW 3 - Computing"
 author: "Brian N. White"
 date: "10/27/2021"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
-
-# Overview / Instructions
-
-This is the computing part of homework `r paste(hw_num)` of STOR 767. It will be **due on `r paste(hw_due_date)` by 11:55 PM** on Sakai. You can directly edit this file to add your answers. Submit the Rmd file and the HTML version.
 
 # Problem: IQ and successes
 
@@ -45,14 +43,14 @@ Personal Demographic Variables:
  
 Household Environment: 
  
-* Imagazine: a variable taking on the value 1 if anyone in the respondentâ€™s household regularly read
+* Imagazine: a variable taking on the value 1 if anyone in the respondent?™s household regularly read
 	magazines in 1979, otherwise 0
-* Inewspaper: a variable taking on the value 1 if anyone in the respondentâ€™s household regularly read
+* Inewspaper: a variable taking on the value 1 if anyone in the respondent?™s household regularly read
 	newspapers in 1979, otherwise 0
-* Ilibrary: a variable taking on the value 1 if anyone in the respondentâ€™s household had a library card
+* Ilibrary: a variable taking on the value 1 if anyone in the respondent?™s household had a library card
 	in 1979, otherwise 0
-* MotherEd: motherâ€™s years of education
-* FatherEd: fatherâ€™s years of education
+* MotherEd: mother's years of education
+* FatherEd: father's years of education
 
 Variables Related to ASVAB test Scores in 1981 (Proxy of IQ's)
 
@@ -75,16 +73,16 @@ Variable Related to Life Success in 2006
 
 The following 10 questions are answered as 1: strongly agree, 2: agree, 3: disagree, 4: strongly disagree
 
-* Esteem 1: â€œI am a person of worthâ€
-* Esteem 2: â€œI have a number of good qualitiesâ€
-* Esteem 3: â€œI am inclined to feel like a failureâ€
-* Esteem 4: â€œI do things as well as othersâ€
-* Esteem 5: â€œI do not have much to be proud ofâ€
-* Esteem 6: â€œI take a positive attitude towards myself and othersâ€
-* Esteem 7: â€œI am satisfied with myselfâ€
-* Esteem 8: â€œI wish I could have more respect for myselfâ€
-* Esteem 9: â€œI feel useless at timesâ€
-* Esteem 10: â€œI think I am no good at allâ€
+* Esteem 1: I am a person of worth?
+* Esteem 2: I have a number of good qualities?
+* Esteem 3: I am inclined to feel like a failure?
+* Esteem 4: I do things as well as others?
+* Esteem 5: I do not have much to be proud of?
+* Esteem 6: I take a positive attitude towards myself and others?
+* Esteem 7: I am satisfied with myself?
+* Esteem 8: I wish I could have more respect for myself?
+* Esteem 9: I feel useless at times?
+* Esteem 10: I think I am no good at all?
 
 **Note: we will not use the Esteem scores in this homework.**
 
@@ -107,18 +105,54 @@ iq1 <- iq[index1, ]
 str(iq1)
 summary(iq1)
 cor(iq[, 11:21]) # ASVAB tests are highly correlated
-pairs(iq[, 11:21]) # 
+pairs(iq[, 11:21])
+
+attach(iq) #load variable names
+```
+
+```{r load packages, include=FALSE}
+pacman::p_load(randomForest, tree, ISLR, rpart, rattle, pROC, partykit, ggplot2, glmnet, lda, class)
 ```
 
 ## 1. EDA
-i. Make a few informative tables or plots to see how intellegence might relate to the log income.
+i. Make a few informative tables or plots to see how intelligence might relate to the log income.
 ii. Make a training data and testing data (approximately 2/3 observations as training data)
+
+**Solution**
+
+**i**
+```{r EDA part i}
+iq %>%
+  ggplot(aes(AFQT, Income2005, col=Educ)) +
+  geom_point() +
+  facet_wrap(~Race)
+
+iq %>%
+  group_by(Race) %>%
+  summarize(n=n(), proportion=n()/2584)
+```
+**ii**
+
+```{r EDA part ii}
+#generate training data indices 
+iq_train_index <- sample(nrow(iq), (2/3)*nrow(iq))
+#generate training data with 2/3 of original observations
+iq_train <- iq[iq_train_index,]
+#generate testing data from the left over observations
+iq_test <- iq[-iq_train_index,]
+```
+
 
 ## 2. Single trees
 i. Build a reasonable single tree using all the variables to predict log income. Display the tree.
 ii. Explain the predictions. Does that agree with our intuition?
 iii. Can you detect gender bias against women from the tree built?
-iv. Do we have evidence that the high IQâ€™s result in higher income? What is the testing errors for the tree you built?
+iv. Do we have evidence that the high IQ?™s result in higher income? What is the testing errors for the tree you built?
+
+```{r}
+
+```
+
 
 ## 3. Bagging with two bootstrap trees.
 i. Build and display two bootstrap trees. Commenting on the differences among the two trees.
