@@ -106,8 +106,6 @@ str(iq1)
 summary(iq1)
 cor(iq[, 11:21]) # ASVAB tests are highly correlated
 pairs(iq[, 11:21])
-
-attach(iq) #load variable names
 ```
 
 ```{r load packages, include=FALSE}
@@ -134,6 +132,7 @@ iq %>%
 **ii**
 
 ```{r EDA part ii}
+set.seed(5)
 #generate training data indices 
 iq_train_index <- sample(nrow(iq), (2/3)*nrow(iq))
 #generate training data with 2/3 of original observations
@@ -154,9 +153,9 @@ iv. Do we have evidence that the high IQs result in higher income? What is the t
 **i**
 
 ```{r}
-tree_iq_train <- tree(Income2005~., iq_train)
-plot(tree_iq_train)
-text(tree_iq_train, pretty = 1)
+tree_train <- tree(Income2005~., iq_train)
+plot(tree_train)
+text(tree_train, pretty = 1)
 ```
 **ii**
 
@@ -165,11 +164,11 @@ text(tree_iq_train, pretty = 1)
 **iv**
 
 ```{r}
-tree_iq_predict <- predict(tree_iq_train, iq_test)
+tree_test <- predict(tree_train, iq_test)
 
-#testing error
-tree_iq_test_err <- sum((iq_test$Income2005-tree_iq_predict)^2)/852
-tree_iq_test_err
+#testing error (MSE), note denominator is n - (# of terminal nodes)
+tree_test_err <- sum((iq_test$Income2005-tree_test)^2)/855
+tree_test_err
 ```
 
 ## 3. Bagging with two bootstrap trees.
@@ -180,14 +179,48 @@ ii. Bag the twos tree by taking average of the two bootstrap trees above. What i
 
 **i**
 
-```{r}
+The bootstrap trees are generated and displayed via the code-chunk below. The two trees differ in a number of ways. First, tree_boot1 used 8 of the available variables whereas tree_boot2 used 6. Further, tree_boot1 has 10 terminal nodes whereas tree_boot2 has 9. They fit the training data comparably well (as would be expected) with residual mean deviance of .6358 and .6904, respectively. The tree-diagram for tree_boot1 one indicates that the following observations are predicted to have the greatest salaries: men who performed above the 20th percentile on the AFQT, have over 15 years of education and grew up in a family with an income greater than 2450 have predicted salaries of about 40K. In contrast, women with arithmetic test scores greater than 15.5 are predicted to have salaries of about 55K. A similar analysis can be readily performed through inspection of the tree-diagram for tree_boot2.
 
+```{r generate two trees via bootstrap sampling}
+set.seed(5)
+#generate two bootstrap samples 
+sample.df <- function(df){
+  index <- sample(nrow(df), nrow(df), replace=T)
+  sample <- df[index,]
+  return(sample)
+}
+
+boot1 <- sample.df(iq_train)
+boot2 <- sample.df(iq_train)
+
+#generate two bootstrap trees
+tree_boot1<- tree(Income2005~., boot1)
+tree_boot2<- tree(Income2005~., boot2)
+
+#summary of trees
+summary(tree_boot1)
+summary(tree_boot2)
+
+#display the two bootstrap trees
+plot(tree_boot1)
+text(tree_boot1, pretty = 1)
+plot(tree_boot2)
+text(tree_boot2, pretty = 1)
 ```
 
 **ii**
 
-```{r}
+```{r bag the trees}
+#compute the test predictions for each tree
+tree_boot1_test <- predict(tree_boot1, iq_test)
+tree_boot2_test <- predict(tree_boot2, iq_test)
 
+#bag the trees by taking the average of their respective test data predictions
+bagged_predictions <- (tree_boot1_test + tree_boot2_test)/2
+
+#compute testing error (MSE) for bagged tree predictions
+bagged_test_err <- sum((iq_test$Income2005-bagged_predictions)^2)/852
+bagged_test_err
 ```
 
 ## 4. Build the best possible random forest
