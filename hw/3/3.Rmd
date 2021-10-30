@@ -159,9 +159,21 @@ text(tree_train, pretty = 1)
 ```
 **ii**
 
+The decision tree tells us that men with more than 15.5 years of education are the highest earning demographic overall with an expected salary of ~70,000 USD. In contrast, men with no more than 15.5 years of education who score no more than 15.5 on the arithmetic exam and whose parents had a combined income of no more than 10,000 USD are the lowest earning demographic among men, with an expected salary of ~21120 USD. 
+
+Similarly, women with more than 15.5 years of education are the highest earning demographic among women, with an expected salary of ~36690 USD. In contrast, women with no more than 15.5 years of education who performed no better than the ~18th percentile of AFQT test takers are the lowest earning demographic overall, with an expected salary of ~13240 USD. 
+
+Similar analysis can be performed for the remaining paths on the decision tree via inspection of the tree plot above. 
+
+These results are consistent with intuition in the sense that an observation's intelligence, to that extent one believes the variables in the tree are reasonable measures of intelligence, predicts a higher salary. 
+
 **iii**
 
+The decision tree appears to indicate the presence of gender bias. For instance, women with more than 15.5 years of education have an expected salary of ~36690 USD whereas men with more than 15.5 years of education have an expected salary of ~70000 USD. 
+
 **iv**
+
+As discussed in part i, the decision tree offers evidence for the claim that high IQs result in higher income. The testing error (MSE) for the tree in question is ~0.791
 
 ```{r}
 tree_test <- predict(tree_train, iq_test)
@@ -179,7 +191,7 @@ ii. Bag the twos tree by taking average of the two bootstrap trees above. What i
 
 **i**
 
-The bootstrap trees are generated and displayed via the code-chunk below. The two trees differ in a number of ways. First, tree_boot1 used 8 of the available variables whereas tree_boot2 used 6. Further, tree_boot1 has 10 terminal nodes whereas tree_boot2 has 9. They fit the training data comparably well (as would be expected) with residual mean deviance of .6358 and .6904, respectively. The tree-diagram for tree_boot1 one indicates that the following observations are predicted to have the greatest salaries: men who performed above the 20th percentile on the AFQT, have over 15 years of education and grew up in a family with an income greater than 2450 have predicted salaries of about 40K. In contrast, women with arithmetic test scores greater than 15.5 are predicted to have salaries of about 55K. A similar analysis can be readily performed through inspection of the tree-diagram for tree_boot2.
+The bootstrap trees are generated and displayed via the code-chunk below. The two trees differ in a number of ways. First, tree_boot1 used 8 of the available variables whereas tree_boot2 used 6. Further, tree_boot1 has 10 terminal nodes whereas tree_boot2 has 9. They fit the training data comparably well (as would be expected) with residual mean deviance of .6358 and .6904, respectively. The tree-diagram for tree_boot1 indicates that the following observations are predicted to have the greatest salaries: men who performed above the 20th percentile on the AFQT, have over 15 years of education and grew up in a family with an income greater than 2450 have predicted salaries of about 40K. In contrast, women with arithmetic test scores greater than 15.5 are predicted to have salaries of about 55K. A similar analysis can be readily performed through inspection of the tree-diagram for tree_boot2.
 
 ```{r generate two trees via bootstrap sampling}
 set.seed(5)
@@ -227,3 +239,12 @@ bagged_test_err
 i. Show the process how you tune the number of the trees and `mtry`
 ii. What is the testing error for your random forest?
 iii. Comment on the pro and cons for the random forest comparing with the single tree you built earlier.
+
+**Solution**
+
+**i**
+
+```{r}
+
+```
+
